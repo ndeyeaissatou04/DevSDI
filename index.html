@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Éducation au Sénégal — Plateforme SIG</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:ital,wght@0,700;0,900;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --green:        #006B3C;
+            --green-mid:    #008751;
+            --green-dark:   #091D12;
+            --green-light:  #E6F5EE;
+            --green-glow:   rgba(0,135,81,0.12);
+            --yellow:       #FCD116;
+            --yellow-light: #FFFBE6;
+            --red:          #C0392B;
+            --red-light:    #FEF0EE;
+            --ink:          #0D1B0F;
+            --slate:        #3D5246;
+            --muted:        #7A9185;
+            --border:       #D6E8DF;
+            --bg:           #F4F9F6;
+            --white:        #FFFFFF;
+            --shadow-card:  0 4px 20px rgba(0,40,20,0.06), 0 2px 6px rgba(0,40,20,0.04);
+            --shadow-hover: 0 12px 32px rgba(0,50,30,0.12), 0 4px 12px rgba(0,50,30,0.06);
+            --radius-xl:    24px;
+            --radius-lg:    16px;
+            --radius-md:    12px;
+            --radius-sm:    8px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body { height: 100%; scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            font-size: 0.93rem;
+            -webkit-font-smoothing: antialiased;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* ── HEADER ── */
+        header {
+            position: sticky; top: 0; z-index: 1000;
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+        .nav-inner {
+            max-width: 1240px; margin: 0 auto;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 28px; height: 65px;
+        }
+        .logo {
+            display: flex; align-items: center; gap: 12px;
+            font-family: 'Fraunces', serif; font-size: 1rem; font-weight: 900;
+            color: var(--green); letter-spacing: -0.01em; text-decoration: none;
+        }
+        .logo-flag {
+            display: flex; width: 36px; height: 24px;
+            border-radius: 5px; overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            flex-shrink: 0;
+        }
+        .logo-flag span { flex: 1; }
+        .flag-g { background: #008751; }
+        .flag-y { 
+            background: #FCD116; 
+            display: flex; align-items: center; justify-content: center;
+            font-size: 13px; color: #008751; line-height: 0; padding-bottom: 2px;
+        }
+        .flag-r { background: #E31B23; }
+        .logo-text-line2 { font-size: 0.62rem; font-family: 'DM Sans', sans-serif; font-weight: 500; color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; margin-top: 1px; }
+
+        .nav-pills {
+            display: flex; background: var(--bg);
+            border: 1px solid var(--border); border-radius: 14px;
+            padding: 4px; gap: 2px;
+        }
+        .tab-btn {
+            display: flex; align-items: center; gap: 7px;
+            padding: 8px 20px; border: none; background: none;
+            font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 600;
+            color: var(--muted); cursor: pointer; border-radius: 10px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;
+        }
+        .tab-btn:hover { color: var(--ink); background: rgba(0,135,81,0.07); }
+        .tab-btn.active { background: var(--white); color: var(--green); box-shadow: 0 2px 8px rgba(0,50,30,0.08); }
+
+        /* ── LAYOUT & PAGES ── */
+        .page { display: none; }
+        .page.active { display: block; animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both; }
+        
+        #accueil.page.active, #statistiques.page.active {
+            flex: 1 0 auto;
+        }
+        /* CORRECTION ICI : Utilisation propre de flex-grow pour occuper l'espace restant sans déborder */
+        #carte.page.active { 
+            display: flex; 
+            flex-direction: column; 
+            flex: 1; 
+            height: calc(100vh - 125px); /* Déduction propre du header + footer */
+            min-height: 550px;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(15px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .wrap { max-width: 1240px; margin: 0 auto; padding: 36px 28px 60px; width: 100%; }
+
+        /* ── HERO ACCUEIL ── */
+        .hero-band {
+            background: linear-gradient(135deg, var(--green) 0%, #004D28 100%);
+            border-radius: var(--radius-xl); padding: 48px 44px; margin-bottom: 32px;
+            display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 40px; align-items: center;
+            position: relative; overflow: hidden;
+        }
+        .hero-band::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 80% 50%, rgba(252,209,22,0.12) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-eyebrow {
+            display: inline-flex; align-items: center; gap: 7px;
+            background: rgba(252,209,22,0.18); border: 1px solid rgba(252,209,22,0.35);
+            border-radius: 100px; padding: 5px 14px;
+            font-size: 0.72rem; font-weight: 700; color: var(--yellow);
+            letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 18px;
+        }
+        .hero-h1 {
+            font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 900;
+            color: #FFFFFF; line-height: 1.15; letter-spacing: -0.03em; margin-bottom: 18px;
+        }
+        .hero-h1 em { font-style: italic; color: var(--yellow); }
+        .hero-desc { font-size: 0.94rem; color: rgba(255,255,255,0.78); line-height: 1.7; margin-bottom: 24px; }
+        .hero-sources { display: flex; flex-wrap: wrap; gap: 8px; }
+        .source-chip {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 100px; padding: 4px 12px; font-size: 0.71rem; font-weight: 600; color: rgba(255,255,255,0.65);
+        }
+        .hero-images { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 130px 130px; gap: 10px; }
+        .img-box { border-radius: var(--radius-lg); overflow: hidden; border: 2px solid rgba(255,255,255,0.15); }
+        .img-box img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+        .img-box:hover img { transform: scale(1.06); }
+        .img-box:first-child { grid-row: span 2; }
+
+        /* ── KPI CARDS ── */
+        .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; margin-bottom: 32px; }
+        .kpi-card {
+            background: var(--white); border-radius: var(--radius-lg);
+            border: 1px solid var(--border); padding: 22px 20px;
+            box-shadow: var(--shadow-card); position: relative; overflow: hidden;
+        }
+        .kpi-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; }
+        .kpi-card:nth-child(1)::after { background: var(--green); }
+        .kpi-card:nth-child(2)::after { background: var(--yellow); }
+        .kpi-card:nth-child(3)::after { background: var(--red); }
+        .kpi-card:nth-child(4)::after { background: #2563eb; }
+        .kpi-label { font-size: 0.71rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 10px; }
+        .kpi-value { font-family: 'Fraunces', serif; font-size: 2.2rem; font-weight: 900; color: var(--ink); line-height: 1; }
+        .kpi-source { font-size: 0.68rem; color: var(--muted); margin-top: 8px; }
+
+        /* ── TABLES ── */
+        .card { background: var(--white); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-card); margin-bottom: 24px; overflow: hidden; }
+        .card-head { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); }
+        .card-head h3 { font-family: 'Fraunces', serif; font-size: 1.1rem; font-weight: 700; color: var(--ink); }
+        .card-sub { font-size: 0.76rem; color: var(--muted); margin-top: 4px; }
+        .tbl-wrap { overflow-x: auto; max-height: 400px; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: var(--bg); padding: 14px 16px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; }
+        td { padding: 11px 16px; border-bottom: 1px solid #EEF5F1; color: var(--slate); }
+        tr:hover td { background-color: #F8FBF9; }
+        .bar-cell { display: flex; align-items: center; gap: 8px; }
+        .bar-bg { flex: 1; height: 6px; background: var(--bg); border-radius: 4px; overflow: hidden; }
+        .bar-fg { height: 100%; border-radius: 4px; }
+
+        /* ── CHARTS / ACCORDEONS ── */
+        .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 24px; }
+        .sec-head h2 { font-family: 'Fraunces', serif; font-size: 1.25rem; font-weight: 700; color: var(--ink); }
+        .sec-head .sec-sub { font-size: 0.82rem; color: var(--muted); }
+        .accord { background: var(--white); border-radius: var(--radius-xl); border: 1px solid var(--border); box-shadow: var(--shadow-card); margin-bottom: 16px; overflow: hidden; }
+        .accord-hd { display: flex; align-items: center; justify-content: space-between; padding: 20px 24px; cursor: pointer; user-select: none; }
+        .accord-hd h3 { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 700; color: var(--ink); display: flex; align-items: center; gap: 10px; }
+        .accord-arrow { width: 28px; height: 28px; border-radius: 50%; background: var(--bg); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; color: var(--muted); transition: transform 0.3s; }
+        .accord.open .accord-arrow { transform: rotate(180deg); background: var(--green-light); color: var(--green); }
+        .accord-body { display: none; padding: 0 24px 24px; max-height: 550px; overflow-y: auto; }
+        .accord.open .accord-body { display: block; }
+        
+        .bar-chart { display: flex; flex-direction: column; gap: 10px; }
+        .bar-row { display: grid; grid-template-columns: 130px 1fr 56px; align-items: center; gap: 12px; }
+        .bar-label { font-size: 0.82rem; font-weight: 600; color: var(--slate); text-align: right; }
+        .bar-track { background: var(--bg); border-radius: 100px; height: 10px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 100px; }
+        .bf-green  { background: linear-gradient(90deg, #00A35A, #52D68A); }
+        .bf-yellow { background: linear-gradient(90deg, #D4A017, #FCD116); }
+        .bf-purple { background: linear-gradient(90deg, #7C3AED, #C084FC); }
+        .bf-blue   { background: linear-gradient(90deg, #1D4ED8, #60A5FA); }
+        .bar-val { font-size: 0.82rem; font-weight: 700; color: var(--ink); }
+        .avg-label { font-size: 0.7rem; color: var(--green); font-weight: 700; margin-top: 12px; padding-top: 8px; border-top: 1px dashed var(--border); }
+
+        .dual-row { margin-bottom: 16px; border-bottom: 1px dashed #E2ECE7; padding-bottom: 14px; }
+        .dual-row:last-child { border: none; margin-bottom: 0; padding-bottom: 0; }
+        .dual-region-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .dual-region { font-size: 0.88rem; font-weight: 700; color: var(--ink); }
+        .ips-badge { font-size: 0.74rem; font-weight: 700; padding: 3px 10px; border-radius: 6px; background: var(--green-light); color: var(--green); border: 1px solid rgba(0,107,60,0.15); }
+        .dual-line { display: grid; grid-template-columns: 75px 1fr 48px; align-items: center; gap: 10px; margin-bottom: 5px; }
+        .dual-gender { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+        .dual-val { font-size: 0.82rem; font-weight: 700; text-align: right; }
+
+        /* ── LÉGENDE SUBLIMÉE ── */
+        .legend-grid { 
+            display: grid; 
+            grid-template-columns: repeat(2, 1fr); 
+            gap: 12px; 
+            margin-bottom: 20px; 
+            background: #F8FBF9; 
+            padding: 14px; 
+            border-radius: var(--radius-md);
+            border: 1px dashed var(--border);
+        }
+        .legend-group { display: flex; flex-direction: column; gap: 6px; }
+        .legend-group-title { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: var(--muted); letter-spacing: 0.05em; margin-bottom: 2px; }
+        .legend-flex { display: flex; gap: 16px; }
+        .leg-pill { 
+            display: inline-flex; align-items: center; gap: 8px; 
+            background: var(--white); border: 1px solid var(--border);
+            padding: 5px 12px; border-radius: 100px; font-size: 0.76rem; font-weight: 600; color: var(--slate);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+        .leg-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+        /* ── DESIGN DE LA CARTE CORRIGÉ (PREMIUM STYLING) ── */
+        .map-fullscreen-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            margin: 0px;
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-hover);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .map-topbar { 
+            padding: 18px 28px; 
+            border-bottom: 1px solid var(--border); 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            flex-shrink: 0;
+            z-index: 5;
+        }
+        
+        .map-topbar-title { 
+            font-size: 0.98rem; 
+            font-weight: 700; 
+            color: var(--ink); 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
+        
+        .map-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .map-btn {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--slate);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+            text-decoration: none;
+        }
+
+        .map-btn:hover {
+            background: var(--green-light);
+            color: var(--green);
+            border-color: rgba(0,107,60,0.2);
+            transform: translateY(-1px);
+        }
+
+        .wms-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 10px;
+            border-radius: 6px;
+            background: rgba(37, 99, 235, 0.08);
+            color: #2563eb;
+            border: 1px solid rgba(37, 99, 235, 0.15);
+        }
+        
+        /* CORRECTION ICI : Ajustement propre pour que l'iframe remplisse la zone disponible sans dépasser */
+        .qgis-iframe-wrapper { 
+            flex: 1; 
+            width: 100%; 
+            background: #EAEFEF; 
+            position: relative;
+            box-shadow: inset 0 4px 12px rgba(0, 40, 20, 0.05); 
+            overflow: hidden;
+        }
+        
+        .qgis-iframe { 
+            width: 100%; 
+            height: 100%; 
+            border: none; 
+            display: block; 
+            position: absolute; top: 0; left: 0;
+            z-index: 1;
+        }
+
+        .map-loader {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg);
+            z-index: 2;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--muted);
+            gap: 10px;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--green);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ── BANDE DE PIED DE PAGE ── */
+        footer {
+            background: linear-gradient(135deg, var(--green-dark) 0%, #030a06 100%);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 28px;
+            flex-shrink: 0;
+            width: 100%;
+        }
+        .footer-inner {
+            max-width: 1240px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+        .footer-dev {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .footer-dev strong {
+            color: var(--yellow);
+            font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
+            text-transform: capitalize;
+        }
+        .footer-date {
+            background: rgba(252, 209, 22, 0.12);
+            color: var(--yellow);
+            border: 1px solid rgba(252, 209, 22, 0.25);
+            padding: 4px 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.76rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 1024px) {
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+            .legend-grid { grid-template-columns: 1fr; }
+            .footer-inner { flex-direction: column; gap: 10px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+  <div class="nav-inner">
+    <a class="logo" href="#">
+      <div class="logo-flag"><span class="flag-g"></span><span class="flag-y">★</span><span class="flag-r"></span></div>
+      <div>
+        <div>ÉduSénégal</div>
+        <div class="logo-text-line2">Plateforme SIG · Éducation</div>
+      </div>
+    </a>
+    <nav class="nav-pills">
+      <button class="tab-btn active" onclick="showPage('accueil',this)">📊 Accueil</button>
+      <button class="tab-btn" onclick="showPage('statistiques',this)">📈 Statistiques</button>
+      <button class="tab-btn" onclick="showPage('carte',this)">🗺️ Carte</button>
+    </nav>
+  </div>
+</header>
+
+<div id="accueil" class="page active">
+  <div class="wrap">
+    <div class="hero-band">
+      <div>
+        <div class="hero-eyebrow">✦ Données RGPH-5 · 2023</div>
+        <h1 class="hero-h1">Le système éducatif<br>sénégalais :<br><em>état des lieux</em></h1>
+        <p class="hero-desc">
+          Au Sénégal, l'éducation s'impose comme un pilier fondamental du développement économique et social. Guidé par les orientations du Programme d'Amélioration de la Qualité, de l'Équité et de la Transparence (PAQUET), l'État investit pour garantir un accès universel à l'école. Les données récentes issues du 5ème Recensement Général de la Population et de l'Habitat (RGPH-5) révèlent des avancées significatives, notamment une forte scolarisation dans le cycle élémentaire et une parité de genre globalement favorable aux filles jusqu'au cycle secondaire.
+        Cependant, le paysage éducatif sénégalais reste marqué par d'importants contrastes. Les taux d'alphabétisation cachent de profondes disparités géographiques entre la région capitale, Dakar, et les zones rurales de l'intérieur du pays comme Kaffrine ou Diourbel, où l'impact de l'enseignement traditionnel non formalisé pèse sur les statistiques officielles. </p>
+               <div class="hero-sources">
+          <span class="source-chip">ANSD · RGPH-5</span>
+          <span class="source-chip">MEN / DPRE</span>
+        </div>
+      </div>
+      <div class="hero-images">
+        <div class="img-box"><img src="img/fille.jfif" alt="Élèves"></div>
+        <div class="img-box"><img src="img/sup.jfif" alt="Supérieur"></div>
+        <div class="img-box"><img src="img/scolaire.jfif" alt="École"></div>
+      </div>
+    </div>
+
+    <div class="kpi-row">
+      <div class="kpi-card">
+        <div class="kpi-label">Alphabétisation (10 ans+)</div>
+        <div class="kpi-value">62,9%</div>
+        <div class="kpi-source">ANSD — RGPH-5</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Scolarisation primaire (TBS)</div>
+        <div class="kpi-value">81,0%</div>
+        <div class="kpi-source">MEN / DPRE</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total apprenants</div>
+        <div class="kpi-value">2,85M</div>
+        <div class="kpi-source">ANSD — RGPH-5</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Achèvement primaire</div>
+        <div class="kpi-value">60,2%</div>
+        <div class="kpi-source">MEN / DPRE</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>📋 Synthèse du Taux Brut de Scolarisation (TBS) par Région</h3>
+        <div class="card-sub">Enseignement Élémentaire · Source officielle DPRE</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Région</th><th>TBS Global</th><th>Garçons</th><th>Filles</th><th>Indice Parité (IPS)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Ziguinchor</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-green" style="width:112%"></div></div>112,4%</div></td><td>109,1%</td><td>115,8%</td><td>🟢 1,06 (F)</td></tr>
+            <tr><td><strong>Kolda</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-green" style="width:106%"></div></div>106,1%</div></td><td>100,2%</td><td>112,3%</td><td>🟢 1,12 (F)</td></tr>
+            <tr><td><strong>Sédhiou</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-green" style="width:104%"></div></div>104,3%</div></td><td>98,5%</td><td>110,4%</td><td>🟢 1,12 (F)</td></tr>
+            <tr><td><strong>Tambacounda</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:91%"></div></div>91,8%</div></td><td>88,4%</td><td>95,3%</td><td>🟢 1,08 (F)</td></tr>
+            <tr><td><strong>Matam</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:86%"></div></div>86,5%</div></td><td>78,1%</td><td>95,2%</td><td>🟢 1,22 (F)</td></tr>
+            <tr><td><strong>Kedougou</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:85%"></div></div>85,7%</div></td><td>83,2%</td><td>88,3%</td><td>🟢 1,06 (F)</td></tr>
+            <tr><td><strong>Kaolack</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:79%"></div></div>79,1%</div></td><td>74,3%</td><td>84,1%</td><td>🟢 1,13 (F)</td></tr>
+            <tr><td><strong>Fatick</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:78%"></div></div>78,6%</div></td><td>75,1%</td><td>82,2%</td><td>🟢 1,09 (F)</td></tr>
+            <tr><td><strong>Thiès</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:77%"></div></div>77,2%</div></td><td>73,9%</td><td>80,6%</td><td>🟢 1,09 (F)</td></tr>
+            <tr><td><strong>Saint-Louis</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:75%"></div></div>75,9%</div></td><td>71,6%</td><td>80,3%</td><td>🟢 1,12 (F)</td></tr>
+            <tr><td><strong>Dakar</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:73%"></div></div>73,4%</div></td><td>71,2%</td><td>75,7%</td><td>🟢 1,06 (F)</td></tr>
+            <tr><td><strong>Louga</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-purple" style="width:68%"></div></div>68,2%</div></td><td>61,4%</td><td>75,3%</td><td>🟢 1,23 (F)</td></tr>
+            <tr><td><strong>Kaffrine</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-purple" style="width:64%"></div></div>64,5%</div></td><td>59,8%</td><td>69,4%</td><td>🟢 1,16 (F)</td></tr>
+            <tr><td><strong>Diourbel</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-purple" style="width:51%"></div></div>51,3%</div></td><td>47,5%</td><td>55,2%</td><td>🟢 1,16 (F)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h3>📋 Synthèse de l'Alphabétisation par Région </h3>
+        <div class="card-sub">Population de 10 ans et plus · Moyenne nationale : <strong>62,9%</strong></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Région</th><th>Taux Global</th><th>Hommes</th><th>Femmes</th><th>Rang</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>Dakar</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-green" style="width:72.3%"></div></div>72,3%</div></td><td>80,1%</td><td>65,4%</td><td>🥇 1er</td></tr>
+            <tr><td><strong>Ziguinchor</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-green" style="width:61.3%"></div></div>61,3%</div></td><td>70,5%</td><td>53,1%</td><td>🥈 2e</td></tr>
+            <tr><td><strong>Thiès</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-green" style="width:53.6%"></div></div>53,6%</div></td><td>63,2%</td><td>45,0%</td><td>🥉 3e</td></tr>
+            <tr><td><strong>Saint-Louis</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:48.9%"></div></div>48,9%</div></td><td>58,4%</td><td>40,6%</td><td>4e</td></tr>
+            <tr><td><strong>Kaolack</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:44.2%"></div></div>44,2%</div></td><td>54,7%</td><td>35,1%</td><td>5e</td></tr>
+            <tr><td><strong>Fatick</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:43.5%"></div></div>43,5%</div></td><td>53,9%</td><td>34,2%</td><td>6e</td></tr>
+            <tr><td><strong>Louga</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:41.1%"></div></div>41,1%</div></td><td>51,2%</td><td>32,4%</td><td>7e</td></tr>
+            <tr><td><strong>Tambacounda</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:38.9%"></div></div>38,9%</div></td><td>48,6%</td><td>29,8%</td><td>8e</td></tr>
+            <tr><td><strong>Sédhiou</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:38.2%"></div></div>38,2%</div></td><td>47,9%</td><td>29,1%</td><td>9e</td></tr>
+            <tr><td><strong>Kolda</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:35.4%"></div></div>35,4%</div></td><td>44,8%</td><td>26,3%</td><td>10e</td></tr>
+            <tr><td><strong>Kédougou</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-yellow" style="width:33.1%"></div></div>33,1%</div></td><td>42,5%</td><td>24,2%</td><td>11e</td></tr>
+            <tr><td><strong>Matam</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-purple" style="width:31.5%"></div></div>31,5%</div></td><td>40,3%</td><td>23,1%</td><td>12e</td></tr>
+            <tr><td><strong>Diourbel</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-purple" style="width:28.7%"></div></div>28,7%</div></td><td>37,2%</td><td>21,4%</td><td>13e</td></tr>
+            <tr><td><strong>Kaffrine</strong></td><td><div class="bar-cell"><div class="bar-bg"><div class="bar-fg bf-purple" style="width:24.6%"></div></div>24,6%</div></td><td>32,8%</td><td>17,3%</td><td>14e</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="statistiques" class="page">
+  <div class="wrap">
+    <div class="sec-head">
+      <h2>Graphiques & Analyses Détaillées</h2>
+    </div>
+
+    <div class="accord">
+      <div class="accord-hd" onclick="toggleAccord(this)"><h3>📊 Taux d'alphabétisation par région</h3><div class="accord-arrow">▾</div></div>
+      <div class="accord-body"><div id="chart-alpha" class="bar-chart"></div></div>
+    </div>
+
+    <div class="accord">
+      <div class="accord-hd" onclick="toggleAccord(this)"><h3>📚 Taux Brut de Scolarisation (TBS) par région</h3><div class="accord-arrow">▾</div></div>
+      <div class="accord-body"><div id="chart-scolarisation" class="bar-chart"></div></div>
+    </div>
+
+    <div class="accord">
+      <div class="accord-hd" onclick="toggleAccord(this)"><h3>👩‍🎓 Disparités de genre & Indice de Parité (IPS)</h3><div class="accord-arrow">▾</div></div>
+      <div class="accord-body">
+        
+        <div class="legend-grid">
+            <div class="legend-group">
+                <div class="legend-group-title">Scolarisation Primaire (TBS)</div>
+                <div class="legend-flex">
+                    <span class="leg-pill"><span class="leg-dot" style="background:#1D4ED8"></span>Scol. Garçons</span>
+                    <span class="leg-pill"><span class="leg-dot" style="background:#7C3AED"></span>Scol. Filles</span>
+                </div>
+            </div>
+            <div class="legend-group">
+                <div class="legend-group-title">Alphabétisation (RGPH-5)</div>
+                <div class="legend-flex">
+                    <span class="leg-pill"><span class="leg-dot" style="background:#60A5FA"></span>Alpha. Hommes</span>
+                    <span class="leg-pill"><span class="leg-dot" style="background:#C084FC"></span>Alpha. Femmes</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="chart-genre-ips"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="carte" class="page">
+  <div class="map-fullscreen-container">
+    <div class="map-topbar">
+      <div class="map-topbar-title">🗺️ Cartographie Territoriale — ÉduSénégal</div>
+      <div class="map-actions">
+        <button class="map-btn" onclick="refreshMap()">🔄 Actualiser</button>
+        <a class="map-btn" href="qgis2web/index.html" target="_blank">↗️ Plein écran</a>
+        <span class="wms-badge">Carte interactive</span>
+      </div>
+    </div>
+    <div class="qgis-iframe-wrapper">
+      <div id="map-loader" class="map-loader">
+        <div class="spinner"></div>
+        Chargement de la cartographie...
+      </div>
+      <iframe src="qgis2web/index.html" class="qgis-iframe" title="Carte interactive SIG" onload="hideLoader()"></iframe>
+    </div>
+  </div>
+</div>
+
+<footer>
+    <div class="footer-inner">
+        <div class="footer-dev">
+            SIG Web conçue et développée par : &nbsp;<strong>Ndeye Aissatou DUAGNE</strong>
+        </div>
+        <div class="footer-date">
+            Juin 2026, SDI
+        </div>
+    </div>
+</footer>
+
+<script>
+function showPage(id, btn) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    
+    if (id === 'statistiques') {
+        setTimeout(initCharts, 100);
+    }
+    
+    if (id === 'carte') {
+        refreshMap();
+    }
+}
+
+function refreshMap() {
+    const iframe = document.querySelector('.qgis-iframe');
+    const loader = document.getElementById('map-loader');
+    if (iframe) {
+        if (loader) loader.style.opacity = '1';
+        iframe.src = iframe.src;
+    }
+}
+
+function hideLoader() {
+    const loader = document.getElementById('map-loader');
+    if (loader) {
+        loader.style.opacity = '0';
+    }
+}
+
+function toggleAccord(hd) { hd.parentElement.classList.toggle('open'); }
+
+/* ══════════════════════ DONNÉES ET MOTEUR GRAPHIQUE ══════════════════════ */
+const alphaData = [
+    {region:'Dakar',val:72.3},{region:'Ziguinchor',val:61.3},{region:'Thiès',val:53.6},
+    {region:'Saint-Louis',val:48.9},{region:'Kaolack',val:44.2},{region:'Fatick',val:43.5},
+    {region:'Louga',val:41.1},{region:'Tambacounda',val:38.9},{region:'Sédhiou',val:38.2},
+    {region:'Kolda',val:35.4},{region:'Kédougou',val:33.1},{region:'Matam',val:31.5},
+    {region:'Diourbel',val:28.7},{region:'Kaffrine',val:24.6}
+];
+
+const scolarisationData = [
+    {region:'Ziguinchor',val:112.4},{region:'Kolda',val:106.1},{region:'Sédhiou',val:104.3},
+    {region:'Tambacounda',val:91.8},{region:'Matam',val:86.5},{region:'Kedougou',val:85.7},
+    {region:'Kaolack',val:79.1},{region:'Fatick',val:78.6},{region:'Thiès',val:77.2},
+    {region:'Saint-Louis',val:75.9},{region:'Dakar',val:73.4},{region:'Louga',val:68.2},
+    {region:'Kaffrine',val:64.5},{region:'Diourbel',val:51.3}
+];
+
+const comprehensiveGenreData = [
+    {region:'Ziguinchor',hAlpha:70.5,fAlpha:53.1,hScol:109.1,fScol:115.8,ips:1.06},
+    {region:'Dakar',hAlpha:80.1,fAlpha:65.4,hScol:71.2,fScol:75.7,ips:1.06},
+    {region:'Kolda',hAlpha:44.8,fAlpha:26.3,hScol:100.2,fScol:112.3,ips:1.12},
+    {region:'Sédhiou',hAlpha:47.9,fAlpha:29.1,hScol:98.5,fScol:110.4,ips:1.12},
+    {region:'Thiès',hAlpha:63.2,fAlpha:45.0,hScol:73.9,fScol:80.6,ips:1.09},
+    {region:'Saint-Louis',hAlpha:58.4,fAlpha:40.6,hScol:71.6,fScol:80.3,ips:1.12},
+    {region:'Tambacounda',hAlpha:48.6,fAlpha:29.8,hScol:88.4,fScol:95.3,ips:1.08},
+    {region:'Matam',hAlpha:40.3,fAlpha:23.1,hScol:78.1,fScol:95.2,ips:1.22},
+    {region:'Kedougou',hAlpha:42.5,fAlpha:24.2,hScol:83.2,fScol:88.3,ips:1.06},
+    {region:'Kaolack',hAlpha:54.7,fAlpha:35.1,hScol:74.3,fScol:84.1,ips:1.13},
+    {region:'Fatick',hAlpha:53.9,fAlpha:34.2,hScol:75.1,fScol:82.2,ips:1.09},
+    {region:'Louga',hAlpha:51.2,fAlpha:32.4,hScol:61.4,fScol:75.3,ips:1.23},
+    {region:'Kaffrine',hAlpha:32.8,fAlpha:17.3,hScol:59.8,fScol:69.4,ips:1.16},
+    {region:'Diourbel',hAlpha:37.2,fAlpha:21.4,hScol:47.5,fScol:55.2,ips:1.16}
+];
+
+function barChart(containerId, data, colorClass, maxVal, avg) {
+    const el = document.getElementById(containerId); if (!el) return;
+    let html = '';
+    data.forEach(d => {
+        const pct = (d.val / maxVal) * 100;
+        html += `<div class="bar-row">
+            <div class="bar-label">${d.region}</div>
+            <div class="bar-track"><div class="bar-fill ${colorClass}" style="width:${Math.min(pct, 100)}%"></div></div>
+            <div class="bar-val">${d.val}%</div>
+        </div>`;
+    });
+    if (avg) html += `<div class="avg-label">── Moyenne nationale : ${avg}%</div>`;
+    el.innerHTML = html;
+}
+
+function genreIpsChart(containerId, data) {
+    const el = document.getElementById(containerId); if (!el) return;
+    el.innerHTML = data.map(d => `
+        <div class="dual-row">
+            <div class="dual-region-box">
+                <div class="dual-region">${d.region}</div>
+                <div class="ips-badge">IPS Scolarisation : ${d.ips}</div>
+            </div>
+            <div class="dual-line">
+                <div class="dual-gender" style="color:#1D4ED8; font-size:11px;">Scol. ♂</div>
+                <div class="bar-track"><div class="bar-fill bf-blue" style="width:${d.hScol / 1.2}%"></div></div>
+                <div class="dual-val" style="color:#1D4ED8">${d.hScol}%</div>
+            </div>
+            <div class="dual-line" style="margin-bottom: 8px;">
+                <div class="dual-gender" style="color:#7C3AED; font-size:11px;">Scol. ♀</div>
+                <div class="bar-track"><div class="bar-fill bf-purple" style="width:${d.fScol / 1.2}%"></div></div>
+                <div class="dual-val" style="color:#7C3AED">${d.fScol}%</div>
+            </div>
+            <div class="dual-line">
+                <div class="dual-gender" style="color:#555; font-size:11px;">Alpha. ♂</div>
+                <div class="bar-track" style="height:6px;"><div class="bar-fill" style="background:#60A5FA; width:${d.hAlpha}%"></div></div>
+                <div class="dual-val" style="color:#555; font-size:11px;">${d.hAlpha}%</div>
+            </div>
+            <div class="dual-line">
+                <div class="dual-gender" style="color:#555; font-size:11px;">Alpha. ♀</div>
+                <div class="bar-track" style="height:6px;"><div class="bar-fill" style="background:#C084FC; width:${d.fAlpha}%"></div></div>
+                <div class="dual-val" style="color:#555; font-size:11px;">${d.fAlpha}%</div>
+            </div>
+        </div>`).join('');
+}
+
+function initCharts() {
+    barChart('chart-alpha', alphaData, 'bf-green', 100, 62.9);
+    barChart('chart-scolarisation', scolarisationData, 'bf-yellow', 120, 81.0);
+    genreIpsChart('chart-genre-ips', comprehensiveGenreData);
+}
+</script>
+</body>
+</html>
